@@ -28,7 +28,7 @@ cell_a = Cell(recalc=lambda: dfA.copy())
 cell_b = Cell(recalc=lambda: dfB.copy())
 ```
 
-This is a bit contrived; cell*a and cell_b are 'recalculated' by returning a copy of an external dataframe. We make a \_copy* in order to return a reference to a fresh object instance. Don't have your recalc functions poke around in (or return references to) existing compound objects!
+This is a bit contrived; cell_a and cell_b are 'recalculated' by returning a copy of an external dataframe. We make a copy in order to return a reference to a fresh object instance. Don't have your recalc functions poke around in (or return references to) existing compound objects!
 
 Let's define a recalc function for cell_c and create it:
 
