@@ -80,4 +80,4 @@ class Cell:
             self.value = new_value
 
 
-CELL_CLASS_NAME = Cell.__name__  # 'Cell', see 'cells' property
+CELL_CLASS_NAME = Cell.__name__  # 'Cell', see pype 'cells' property

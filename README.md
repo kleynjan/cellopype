@@ -8,7 +8,7 @@ Think of it as a Jupyter notebook with the cells being automatically (re-)run as
 
 In abstract terms, a cell consists of a custom `recalc` function that takes a number of inputs (`sources`), and recalculates the cell's `value` from the values of these sources. Any change in value for a given cell is propagated to any other cells depending on it. The network of cells must be one-directional, without any loops (i.e., it has to be a DAG). Lazy computation is default, but subscription-type 'push on change' is supported.
 
-Practically all the work is done by the Cell class. `Pype` is a utility class that adds name spacing logic and convenience methods to a collection of Cells. See below.
+Practically all the work is done by the Cell class, which is relatively small (approx. 50-60 lines). `Pype` is a utility class that adds name spacing logic and convenience methods to a collection of Cells. See below.
 
 ## An example with three Cells
 
@@ -28,17 +28,17 @@ cell_a = Cell(recalc=lambda: dfA.copy())
 cell_b = Cell(recalc=lambda: dfB.copy())
 ```
 
-This is a bit contrived; cell*a and cell_b are 'recalculated' by returning a copy of an external dataframe. We make a \_copy* to return a reference to a fresh object instance. Don't have your recalc functions poke around in (or return references to) existing compound objects!
+This is a bit contrived; cell*a and cell_b are 'recalculated' by returning a copy of an external dataframe. We make a \_copy* in order to return a reference to a fresh object instance. Don't have your recalc functions poke around in (or return references to) existing compound objects!
 
-Let's define a recalc function for cell_c and initialize it:
+Let's define a recalc function for cell_c and create it:
 
 ```python
 def plus(a, b):
     return a + b
-cell_c = Cell(recalc=plus, sources=[cell_a, cell_b])
+cell_c = Cell(recalc=plus, sources=[cell_a, cell_b])   # or: recalc=lambda a,b: a+b, sources=[...]
 ```
 
-Check: cell_a and cell_c are initialized: '\_dirty', no cached \_value yet:
+Check that cell_a and cell_c are initialized: they are `_dirty`, with no cached `_value` yet:
 
 ```python
 print('cell_a:', cell_a._dirty, cell_a._value)
@@ -48,7 +48,7 @@ print('cell_c:', cell_c._dirty, cell_c._value)
 cell_c: True None
 ```
 
-Now comes the nice part. Reading **c.value** triggers recalc of cell_c, which reads cell_a & cell_b values, which in turn triggers recalc of cell_a & cell_b:
+Now comes the nice part. Reading `cell_c.value` triggers recalc of cell_c, which reads cell_a & cell_b values, which in turn triggers recalc of cell_a & cell_b:
 
 ```python
 print(cell_c.value)
@@ -134,9 +134,9 @@ pp = Pype()
 pp.cell_a = Cell(recalc=lambda: [1,2,3])
 pp.cell_b = Cell(recalc=lambda: [4,5,6])
 
-# note that the reference to the source cell instances includes the pype container:
-# (allowing references to cells in other pypes)
 pp.cell_c = Cell(recalc=lambda a, b: a+b, sources=[pp.cell_a, pp.cell_b])
+# note that the reference to the source cell instances includes the pype container,
+# allowing references to cells in other pypes (or outside of any pype)
 
 pp.keys():
 dict_keys(['cell_a', 'cell_b', 'cell_c'])
