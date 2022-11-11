@@ -13,7 +13,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(self.c1._dirty, True)
         self.assertEqual(self.c1._value, None)
         self.assertEqual(self.c1.recalc_handler(), None)
-        self.assertEqual(self.c1.on_change_handler(), None)
+        self.assertEqual(self.c1.on_change_handler, None)
 
     def test_init_with_value(self):
         self.test_naked_init()

@@ -5,21 +5,13 @@ class Pype(dict):
     """A dict-like collection of Cells"""
 
     def __init__(self, *args, **kwargs):
-        self.force_unlazy = (
-            kwargs.pop(  # override default per-Cell setting to always force recalc
-                "force_unlazy", False
-            )
-        )
         super().__init__(*args, **kwargs)
-        # self.force_unlazy = force_unlazy
 
     def __setitem__(self, key, value):
         super().__setitem__(key, value)
         self.__dict__.update({key: value})
         if type(self[key]).__name__ == CELL_CLASS_NAME:
             self[key].name = key
-            if self.force_unlazy:
-                self[key].lazy = False
 
     def __setattr__(self, key, value):
         self.__setitem__(key, value)

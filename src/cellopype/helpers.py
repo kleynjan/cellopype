@@ -1,4 +1,8 @@
 def deep_eq(left, right):
+    # both sides must be of the same type
+    if type(left) != type(right):
+        return False
+
     # pandas types
     if "pandas" in str(type(left)):
         return left.equals(right)
@@ -9,10 +13,6 @@ def deep_eq(left, right):
         right = right.__dict__
     except Exception:
         pass
-
-    # both sides must be of the same type
-    if type(left) != type(right):
-        return False
 
     # compare the two objects or dicts key by key
     if type(left) == dict:

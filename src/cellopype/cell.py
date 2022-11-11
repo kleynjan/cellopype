@@ -23,7 +23,7 @@ class Cell:
         self.name = ""  # optional, set by Pype
         self.sources = sources or []
         self.recalc_handler = recalc or (lambda *args: None)
-        self.on_change_handler = on_change or (lambda *args: None)
+        self.on_change_handler = on_change or None
         self.lazy = lazy and not (on_change)
         # init internals:
         self._previous = None
@@ -66,7 +66,8 @@ class Cell:
         if not deep_eq(self._value, self._previous):
             if DEBUG and self.name:
                 print("invalidating dependents for %s" % self.name)
-            self.on_change_handler(self.value)
+            if self.on_change_handler:
+                self.on_change_handler(self.value)
             self._invalidate_dependents()
 
     def recalc(self):

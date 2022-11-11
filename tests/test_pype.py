@@ -46,21 +46,6 @@ class PypeTests(unittest.TestCase):
         self.assertEqual(self.pp.c1._dirty, False)
         self.assertEqual(self.pp.c2._dirty, False)
 
-    def test_force_recalc(self):
-        self.ppp = Pype(force_unlazy=True)
-        self.ppp.c1 = Cell(recalc=lambda: 1)
-        self.ppp.c1.value = 1
-
-        def my_recalc(x):
-            return x * 2
-
-        self.ppp.c2 = Cell(recalc=my_recalc, sources=[self.ppp.c1])
-        self.ppp.c3 = Cell(recalc=my_recalc, sources=[self.ppp.c2])
-        self.assertEqual(self.ppp.c2.lazy, False)
-        self.ppp.c1.value = 2
-        self.assertEqual(self.ppp.c2._value, 4)
-        self.assertEqual(self.ppp.c3._value, 8)
-
     # def dump_values(self):
     #    """Return all recalculated cell values in a list of dicts [{'name': ..., 'value': ...}]"""
     #    self.recalc_all()
