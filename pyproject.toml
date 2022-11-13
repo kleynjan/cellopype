@@ -1,3 +1,22 @@
+[project]
+name = "cellopype"
+version = "0.1.1"
+authors = [
+  { name="Peter Kleynjan", email="peter.kleynjan@quantis.nl" },
+]
+description = "Build reactive networks using Cells and Pypes."
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/kleynjan/cellopype"
+"Bug Tracker" = "https://github.com/kleynjan/cellopype/issues"
+
 [build-system]
 requires = ["setuptools>=46.4.0", "wheel"]
 build-backend = "setuptools.build_meta"

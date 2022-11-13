@@ -1,8 +1,14 @@
 # cellopype: a reactive pipeline of executable cells
 
+## Installation
+
+```
+pip install cellopype
+```
+
 ## Introduction
 
-With the cellopype `Cell` and `Pype` classes, you can build a network of **interconnected DataFrames**, each wrapped in its own cell. Each cell has its own 'construction rules' and an update to any cell value is cascaded through the rest of the network.
+With the cellopype `Cell` and `Pype` classes, you can build a network of **interconnected data structures** (such as pandas DataFrames), each wrapped in its own cell. Each cell has its own 'construction rules' and an update to any cell value is cascaded through the rest of the network.
 
 Think of it as a Jupyter notebook with the cells being automatically (re-)run as required by changes at other points in the notebook. (And without the UI, obviously.)
 
@@ -10,9 +16,32 @@ In abstract terms, a cell consists of a custom `recalc` function that takes a nu
 
 Practically all the work is done by the Cell class, which is relatively small (approx. 50-60 lines). `Pype` is a utility class that adds name spacing logic and convenience methods to a collection of Cells. See below.
 
-## An example with three Cells
+## A minimal example
 
-![a+b=c](TcBWl.png)
+```python
+from cellopype import Cell
+l1 = [1,2,3]
+l2 = [4,5,6]
+cell_1 = Cell(recalc=lambda: l1.copy())
+cell_2 = Cell(recalc=lambda: l2.copy())
+cell_3 = Cell(recalc=lambda a,b: a+b, sources=[cell_1,cell_2])
+
+>>> print(cell_1._value)    # nothing yet
+None
+
+>>> print(cell_3.value)     # this triggers recalc
+[1, 2, 3, 4, 5, 6]
+
+l1.append(99)               # change cell_1 value & recalc...
+cell_1.recalc()
+
+>>> print(cell_3.value)
+[1, 2, 3, 99, 4, 5, 6]
+```
+
+## An example with three dataframes
+
+![a+b=c](https://github.com/kleynjan/cellopype/blob/main/TcBWl.png)
 
 ```python
 import pandas as pd
@@ -28,7 +57,7 @@ cell_a = Cell(recalc=lambda: dfA.copy())
 cell_b = Cell(recalc=lambda: dfB.copy())
 ```
 
-This is a bit contrived; cell_a and cell_b are 'recalculated' by returning a copy of an external dataframe. We make a copy in order to return a reference to a fresh object instance. Don't have your recalc functions poke around in (or return references to) existing compound objects!
+This is a bit contrived; cell_a and cell_b are 'recalculated' by returning a copy of an external dataframe. In practice you might (re-)load XLS or CSV files instead.
 
 Let's define a recalc function for cell_c and create it:
 
@@ -41,17 +70,17 @@ cell_c = Cell(recalc=plus, sources=[cell_a, cell_b])   # or: recalc=lambda a,b: 
 Check that cell_a and cell_c are initialized: they are `_dirty`, with no cached `_value` yet:
 
 ```python
-print('cell_a:', cell_a._dirty, cell_a._value)
+>>> print('cell_a:', cell_a._dirty, cell_a._value)
 cell_a: True None
 
-print('cell_c:', cell_c._dirty, cell_c._value)
+>>> print('cell_c:', cell_c._dirty, cell_c._value)
 cell_c: True None
 ```
 
-Now comes the nice part. Reading `cell_c.value` triggers recalc of cell_c, which reads cell_a & cell_b values, which in turn triggers recalc of cell_a & cell_b:
+Now to kick the network into action: reading `cell_c.value` triggers recalc of cell_c, which reads cell_a & cell_b values, which in turn triggers recalc of cell_a & cell_b:
 
 ```python
-print(cell_c.value)
+>>> print(cell_c.value)
 
     value
 0   11
@@ -70,7 +99,7 @@ Reading the value for cell_c again now triggers recalc across the pipeline. \
 The row 0 value of cell_c reflects the change in row 0 of cell_a:
 
 ```python
-print(cell_c.value)
+>>> print(cell_c.value)
 
     value
 0   232
@@ -105,8 +134,8 @@ my_cell = Cell(
 )
 ```
 
-1. Our `recalc` function here is pretty trivial. Alternatively, we could simply pass in `recalc=pd.DataFrame.add` \
-   (When you pass a class method as recalc function, the first argument is taken as the instance, i.e., _self_.) \
+1. Our `recalc` function here is pretty trivial. Alternatively, we could simply pass in `recalc=pd.DataFrame.add` : if we pass a class method as recalc function, the first argument is taken as the instance, i.e., _self_. \
+   Note: make sure the recalc function always returns (a reference to) a fresh object instance. Don't have your recalc functions poke around in existing compound objects!
 
 2. If `lazy`=True: the cell's value property is recalculated when: \
    &ensp;&ensp;(1) cell.recalc() is called or \
@@ -135,30 +164,28 @@ pp.cell_a = Cell(recalc=lambda: [1,2,3])
 pp.cell_b = Cell(recalc=lambda: [4,5,6])
 
 pp.cell_c = Cell(recalc=lambda a, b: a+b, sources=[pp.cell_a, pp.cell_b])
-# note that the reference to the source cell instances includes the pype container,
-# allowing references to cells in other pypes (or outside of any pype)
 
-pp.keys():
+>>> print(pp.keys())
 dict_keys(['cell_a', 'cell_b', 'cell_c'])
 
-print(pp.cell_a)
+>>> print(pp.cell_a)
 <cellopype.cell.Cell at 0x7fb3100976d0>
 
-print(pp.cell_c.value)
+>>> print(pp.cell_c.value)
 [1, 2, 3, 4, 5, 6]
 ```
 
 The cell **name** is also added back to the cell:
 
 ```python
-print(pp.cell_a.name)
+>>> print(pp.cell_a.name)
 'cell_a'    # handy for debugging if a cell can identity itself back to you
 ```
 
-Pype.**cells** gets all cells in the Pype into a name-based dictionary:
+Pype.**cells** returns all cells in the Pype as a name-based dictionary:
 
 ```python
-print(pp.cells)
+>>> print(pp.cells)
 {   'cell_a': <cellopype.cell.Cell object at 0x7fb3100976d0>,
     'cell_b': <cellopype.cell.Cell object at 0x7fb310097790>,
     'cell_c': <cellopype.cell.Cell object at 0x7fb310097910>}
@@ -171,7 +198,7 @@ Pype.**dump_values**() dumps all cell values to a list of dicts while Pype.**loa
 ```python
 # recalculate and dump all cell values to a list of dicts
 pld = pp.dump_values()
-print(pld)
+>>> print(pld)
 [   {'name': 'cell_a', 'value': [1, 2, 3]},
     {'name': 'cell_b', 'value': [4, 5, 6]},
     {'name': 'cell_c', 'value': [1, 2, 3, 4, 5, 6]}]
